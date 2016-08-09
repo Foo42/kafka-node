@@ -17,6 +17,7 @@ var client, stream, producer, offset;
 
 var TOPIC_POSTFIX = '_test_' + Date.now();
 var STREAM_TOPIC = '_stream_1' + TOPIC_POSTFIX;
+var DOES_NOT_EXIST = 'does_not_exist' + TOPIC_POSTFIX;
 
 var host = process.env['KAFKA_TEST_HOST'] || '';
 function noop () { console.log(arguments); }
@@ -52,8 +53,8 @@ describe('StreamConsumer', function () {
     stream.close(done);
   });
 
-  describe('events', function () {
-    it.only('should emit message when get new message', function (done) {
+  describe.only('events', function () {
+    it('should emit message when get new message', function (done) {
       var topics = [ { topic: STREAM_TOPIC } ];
       var options = { autoCommit: false, groupId: '_groupId_1_test' };
       stream = new StreamConsumer(client, topics, options);
@@ -68,5 +69,16 @@ describe('StreamConsumer', function () {
 
       stream.pipe(sink);
     });
+
+    it('should emit error when topic not exists', function (done) {
+      var topics = [ { topic: DOES_NOT_EXIST } ];
+      var options = { autoCommit: false, groupId: '_groupId_2_test' };
+      console.log('creating stream consumer for second test');
+      stream = new StreamConsumer(client, topics, options);
+      stream.on('error',function(){
+       done();
+      });
+    });
+
   });
 });
